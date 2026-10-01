@@ -6,7 +6,6 @@
 # Converts each Legal guidance entry into a LangChain document
 # Adds metadata for traceability during retrieval.
 
-import os 
 from pathlib import Path
 from langchain_core.documents import Document
 

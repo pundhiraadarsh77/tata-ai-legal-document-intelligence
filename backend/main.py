@@ -6,7 +6,12 @@ from pydantic import BaseModel
 from langgraph.types import Command
 
 from backend.database import engine, SessionLocal
-from backend.models import Base
+from backend.models import (
+    Base,
+    Clause,
+    RiskFlag,
+    ReviewDecision
+)
 from backend.crud import (
     create_document,
     get_documents,
@@ -178,6 +183,77 @@ def read_documents(
             "uploaded_at": document.uploaded_at
         }
         for document in documents
+    ]
+
+# ----------------------------------------------
+# Get All Clauses
+# ----------------------------------------------
+
+@app.get("/clauses")
+def read_clauses(
+    db: Session = Depends(get_db)
+):
+
+    clauses = db.query(Clause).all()
+
+    return [
+        {
+            "id": clause.id,
+            "document_id": clause.document_id,
+            "analysis_run_id": clause.analysis_run_id,
+            "clause_type": clause.clause_type,
+            "clause_text": clause.clause_text
+        }
+        for clause in clauses
+    ]
+
+# ----------------------------------------------
+# Get All Risk Flags
+# ----------------------------------------------
+
+@app.get("/risk-flags")
+def read_risk_flags(
+    db: Session = Depends(get_db)
+):
+
+    risk_flags = db.query(RiskFlag).all()
+
+    return [
+        {
+            "id": risk.id,
+            "document_id": risk.document_id,
+            "analysis_run_id": risk.analysis_run_id,
+            "severity": risk.severity,
+            "risk_type": risk.risk_type,
+            "affected_clause": risk.affected_clause,
+            "rationale": risk.rationale,
+            "source_location": risk.source_location,
+            "recommended_action": risk.recommended_action,
+            "confidence": risk.confidence
+        }
+        for risk in risk_flags
+    ]
+
+# ----------------------------------------------
+# Get All Review Decisions
+# ----------------------------------------------
+
+@app.get("/review-decisions")
+def read_review_decisions(
+    db: Session = Depends(get_db)
+):
+
+    review_decisions = db.query(ReviewDecision).all()
+
+    return [
+        {
+            "id": review.id,
+            "document_id": review.document_id,
+            "analysis_run_id": review.analysis_run_id,
+            "decision": review.decision,
+            "reviewed_at": review.reviewed_at
+        }
+        for review in review_decisions
     ]
 
 # ----------------------------------------------
@@ -361,9 +437,6 @@ def run_analysis(
         initial_state,
         config = config
     )
-
-    print("GRAPH RESULT:")
-    print(result)
 
     # --------------------------------------------------
     # Detect LangGraph interrupt

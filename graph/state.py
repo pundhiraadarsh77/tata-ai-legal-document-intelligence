@@ -1,4 +1,4 @@
-from typing import TypedDict, List, Dict, Annotated
+from typing import TypedDict, Annotated
 from langgraph.graph.message import add_messages
 
 class Legal_Document_State(TypedDict, total = False):
