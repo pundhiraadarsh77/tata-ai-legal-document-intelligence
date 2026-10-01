@@ -8,11 +8,13 @@ The system extracts important clauses, checks whether sufficient information is 
 
 ## 🌐 Live Application
 
-**[Open Tata AI Legal Document Intelligence](YOUR_DEPLOYED_APP_URL)**
+[Open Tata AI Legal Document Intelligence](https://tata-ai-legal-frontend-1076111671297.asia-south1.run.app)
 
 The application is deployed and can be accessed directly through the link above.
 
 ### 📂 Source Code
+
+[GitHub Repository](https://github.com/pundhiraadarsh77/tata-ai-legal-document-intelligence)
 
 The complete source code, project structure, documentation, and configuration are available in this GitHub repository.
 
