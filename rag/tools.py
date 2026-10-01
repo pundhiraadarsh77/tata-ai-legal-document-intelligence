@@ -12,15 +12,30 @@ from langchain_chroma import Chroma
 
 from graph.state import Legal_Document_State
 
-embeddings = HuggingFaceEmbeddings(
-    model_name = "sentence-transformers/all-MiniLM-L6-v2"
-)
+# --------------------------------------------------
+# Load Embedding Model
+# --------------------------------------------------
+
+embeddings = None
+
+def get_embeddings():
+
+    global embeddings
+
+    # Load the embedding model only on first use
+    if embeddings is None:
+
+        embeddings = HuggingFaceEmbeddings(
+            model_name = "sentence-transformers/all-MiniLM-L6-v2"
+        )
+
+    return embeddings
 
 def get_document_retriever(state: Legal_Document_State):
 
     vector_store = Chroma(
         persist_directory = state["document_vector_store_path"],
-        embedding_function = embeddings
+        embedding_function = get_embeddings()
     )
 
     return vector_store.as_retriever(

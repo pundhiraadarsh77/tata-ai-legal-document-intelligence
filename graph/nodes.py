@@ -21,9 +21,8 @@ from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langgraph.types import interrupt
 
-
 from graph.state import Legal_Document_State
-from rag.kb_retriever import retriever
+from rag.kb_retriever import get_kb_retriever
 from rag.tools import document_evidence_search, evidence_verification
 
 load_dotenv()
@@ -236,10 +235,21 @@ Rules:
     }
 
 # ----------------------------------------------
-# Initializing OCR Engine
+# Load OCR Engine
 # ----------------------------------------------
 
-ocr_engine = RapidOCR()
+ocr_engine = None
+
+def get_ocr_engine():
+
+    global ocr_engine
+
+    # Load OCR engine only when it is actually needed
+    if ocr_engine is None:
+
+        ocr_engine = RapidOCR()
+
+    return ocr_engine
 
 # ----------------------------------------------
 # OCR Helper
@@ -250,7 +260,7 @@ def extract_text_from_image(image):
     # Convert PIL image into NumPy array
     image_array = np.array(image)
 
-    result, _ = ocr_engine(image_array)
+    result, _ = get_ocr_engine()(image_array)
 
     raw_text = ""
 
@@ -629,7 +639,7 @@ Return the result using the required structured format.
 """
 
     result = invoke_structured_with_fallback(Sufficiency_Check, prompt)
-    
+
     # Mark sufficiency check as completed
     update_progress(
         state.get("thread_id"),
@@ -700,6 +710,8 @@ def retrieve_legal_guidance(state: Legal_Document_State):
     """Retrieve relevant legal guidance from the approved knowledge base."""
 
     retrieved_guidance = []
+
+    retriever = get_kb_retriever()
 
     # Search the knowledge base using the extracted clause
     for clause in state["clauses"]:
@@ -1139,13 +1151,24 @@ Finalized
         "final_summary": result.content
     }
 
-# ----------------------------------------------
-# Embedding Model
-# ----------------------------------------------
+# --------------------------------------------------
+# Load Embedding Model for Document Q&A
+# --------------------------------------------------
 
-embeddings = HuggingFaceEmbeddings(
-    model_name = "sentence-transformers/all-MiniLM-L6-v2"
-)
+qa_embeddings = None
+
+def get_qa_embeddings():
+
+    global qa_embeddings
+
+    # Load the embedding model only on first use
+    if qa_embeddings is None:
+
+        qa_embeddings = HuggingFaceEmbeddings(
+            model_name = "sentence-transformers/all-MiniLM-L6-v2"
+        )
+
+    return qa_embeddings
 
 # --------------------------------------------------
 # Document Follow-up Q&A
@@ -1156,7 +1179,7 @@ def document_qa(document_vector_store_path, user_question):
     # Create retriever for the uploaded document
     retriever = Chroma(
         persist_directory = document_vector_store_path,
-        embedding_function = embeddings
+        embedding_function = get_qa_embeddings()
     ).as_retriever(
         search_kwargs = {"k": 3}
     )

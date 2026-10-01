@@ -12,9 +12,24 @@ from langchain_chroma import Chroma
 from graph.state import Legal_Document_State
 from utils.chunking import create_chunks
 
-embeddings = HuggingFaceEmbeddings(
-    model_name = "sentence-transformers/all-MiniLM-L6-v2"
-)
+# --------------------------------------------------
+# Load Embedding Model
+# --------------------------------------------------
+
+embeddings = None
+
+def get_embeddings():
+
+    global embeddings
+
+    # Load the embedding model only on first use
+    if embeddings is None:
+
+        embeddings = HuggingFaceEmbeddings(
+            model_name = "sentence-transformers/all-MiniLM-L6-v2"
+        )
+
+    return embeddings
 
 # --------------------------------------------------
 # Create Document Retriever
@@ -42,7 +57,7 @@ def create_document_vector_store(state: Legal_Document_State):
     # Create Chroma vector store inside the temporary directory
     Chroma.from_documents(
         documents = documents,
-        embedding = embeddings,
+        embedding = get_embeddings(),
         persist_directory = temp_directory
     )
 
