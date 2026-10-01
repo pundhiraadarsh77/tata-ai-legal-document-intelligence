@@ -1,0 +1,38 @@
+# Git
+.git/
+.gitignore
+
+# Virtual Environment
+venv/
+venv*/
+.venv/
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Streamlit
+.streamlit/
+
+# Local SQLite Database
+*.db
+*.sqlite
+*.sqlite3
+
+# User Uploads
+uploads/
+
+# Logs
+*.log
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/

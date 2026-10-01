@@ -1,0 +1,37 @@
+# Local Virtual Environment
+venv/
+venv*/
+.venv/
+
+# Environment Variables and API Keys - NEVER upload to GitHub
+.env
+.env.*
+!.env.example
+
+# Python Cache Files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Streamlit local configuration
+.streamlit/
+
+# Local Vector Databases
+/chroma_db/
+
+# User Uploaded / Temporary Documents
+uploads/
+
+# Local SQLite Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# OS / Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
