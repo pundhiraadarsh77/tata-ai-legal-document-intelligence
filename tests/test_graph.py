@@ -1,6 +1,6 @@
 from graph.graph import graph
 
-document_path = "uploads/testing.pdf"
+document_path = "tests/testing_files/pdf_testing.pdf"
 
 initial_state = {
     "document_path": document_path
