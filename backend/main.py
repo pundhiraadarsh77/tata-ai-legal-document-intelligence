@@ -362,6 +362,9 @@ def run_analysis(
         config = config
     )
 
+    print("GRAPH RESULT:")
+    print(result)
+
     # --------------------------------------------------
     # Detect LangGraph interrupt
     # --------------------------------------------------
