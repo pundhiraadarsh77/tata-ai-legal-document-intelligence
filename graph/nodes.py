@@ -78,7 +78,7 @@ def invoke_structured_with_fallback(schema, prompt):
 
     except Exception as groq_error:
 
-        print("Groq Structured Output Error:", repr(groq_error))
+        print("Groq Structured Output Error:", repr(groq_error), flush=True)
 
     # ----------------------------------------------
     # Try Gemini if Groq fails
@@ -96,7 +96,7 @@ def invoke_structured_with_fallback(schema, prompt):
 
     except Exception as gemini_error:
 
-        print("Gemini Error:", repr(gemini_error))
+        print("Gemini Error:", repr(gemini_error), flush=True)
 
         raise RuntimeError(
             "LLM service unavailable"
