@@ -1152,9 +1152,20 @@ Finalized
 """
     
     result = invoke_with_fallback(prompt)
+    
+    # Groq may return content as a list of text blocks.
+    # SQLite requires final_summary to be stored as a string.
+    final_summary = result.content
+
+    if isinstance(final_summary, list):
+        final_summary = "".join(
+            item.get("text", "")
+            for item in final_summary
+            if isinstance(item, dict)
+        )
 
     return {
-        "final_summary": result.content
+        "final_summary": final_summary
     }
 
 # --------------------------------------------------
