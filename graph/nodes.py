@@ -76,9 +76,9 @@ def invoke_structured_with_fallback(schema, prompt):
 
         return result
 
-    except Exception:
+    except Exception as groq_error:
 
-        pass
+        print("Groq Structured Output Error:", repr(groq_error))
 
     # ----------------------------------------------
     # Try Gemini if Groq fails
@@ -95,6 +95,8 @@ def invoke_structured_with_fallback(schema, prompt):
         return result
 
     except Exception as gemini_error:
+
+        print("Gemini Error:", repr(gemini_error))
 
         raise RuntimeError(
             "LLM service unavailable"
@@ -114,9 +116,9 @@ def invoke_with_fallback(prompt):
 
         return groq_llm.invoke(prompt)
 
-    except Exception:
-
-        pass
+    except Exception as groq_error:
+        
+        print("Groq Normal LLM Error:", repr(groq_error))
 
     # -----------------------------------------
     # Try Gemini if Groq fails
@@ -127,6 +129,8 @@ def invoke_with_fallback(prompt):
         return gemini_llm.invoke(prompt)
 
     except Exception as gemini_error:
+
+        print("Gemini Error:", repr(gemini_error))
         
         raise RuntimeError(
             "LLM service unavailable"
@@ -147,9 +151,9 @@ def invoke_with_tools_fallback(tools, messages):
 
         return llm_with_tools.invoke(messages)
 
-    except Exception:
-
-        pass
+    except Exception as groq_error:
+        
+        print("Groq Tool Calling Error:", repr(groq_error))
 
     # ----------------------------------------------
     # Try Gemini
@@ -161,6 +165,8 @@ def invoke_with_tools_fallback(tools, messages):
         return llm_with_tools.invoke(messages)
 
     except Exception as gemini_error:
+
+        print("Gemini Error:", repr(gemini_error))
 
         raise RuntimeError(
             "LLM service unavailable"
