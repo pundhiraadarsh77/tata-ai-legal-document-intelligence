@@ -131,7 +131,7 @@ The retrieval layer uses:
 * HuggingFace `all-MiniLM-L6-v2` embeddings
 * ChromaDB
 * Semantic similarity search
-* Top-k retrieval
+* Top-1 semantic retrieval
 
 Relevant guidance is retrieved based on the clauses identified in the uploaded document.
 
@@ -323,7 +323,7 @@ The final output provides a consolidated view of the approved analysis.
              ↓              ↓              ↓
         LLM Layer       RAG Layer      Document Tools
              │              │              │
-       Groq / Gemini     ChromaDB      Evidence Search
+Groq/Gemini/OpenRouter   ChromaDB      Evidence Search
                                       Evidence Verification
              │              │              │
              └──────────────┼──────────────┘
@@ -331,6 +331,22 @@ The final output provides a consolidated view of the approved analysis.
                      Human Review
                             ↓
                  Final Document Summary
+
+---
+
+## 🔄 LLM Provider Fallback
+
+To improve reliability, the application uses a fallback mechanism across multiple LLM providers.
+
+The fallback order is:
+
+**Groq → Google Gemini → OpenRouter**
+
+If a Groq request fails, the system attempts the same operation using Google Gemini. If Gemini also fails, the system falls back to OpenRouter.
+
+This fallback mechanism is used for LLM operations including standard generation, structured outputs, and tool-calling operations.
+
+The fallback mechanism does not change the application workflow. It only provides an alternative LLM provider when the current provider is unavailable or unable to complete the request.
 
 ---
 
@@ -352,24 +368,24 @@ The application database is separate from the vector databases used for document
 
 ## 🧩 Technology Stack
 
-| Technology             | Purpose                         |
-| ---------------------- | ------------------------------- |
-| Python                 | Core programming language       |
-| Streamlit              | Frontend and user interface     |
-| FastAPI                | Backend API                     |
-| LangGraph              | Workflow orchestration          |
-| LangChain              | LLM and retrieval integrations  |
-| Groq / Google Gemini   | Generative AI                   |
-| ChromaDB               | Vector database                 |
-| HuggingFace Embeddings | Semantic embeddings             |
-| Pydantic               | Structured data and LLM outputs |
-| SQLAlchemy             | Database ORM                    |
-| SQLite                 | Application database            |
-| PyPDF                  | PDF processing                  |
-| python-docx            | DOCX processing                 |
-| RapidOCR               | OCR                             |
-| Pillow                 | Image processing                |
-| odfpy                  | ODT processing                  |
+| Technology                                 | Purpose                         |
+| -------------------------------------------| ------------------------------- |
+| Python                                     | Core programming language       |
+| Streamlit                                  | Frontend and user interface     |
+| FastAPI                                    | Backend API                     |
+| LangGraph                                  | Workflow orchestration          |
+| LangChain                                  | LLM and retrieval integrations  |
+| Groq / Google Gemini / OpenRouter          | Generative AI        |
+| ChromaDB                                   | Vector database                 |
+| HuggingFace Embeddings                     | Semantic embeddings             |
+| Pydantic                                   | Structured data and LLM outputs |
+| SQLAlchemy                                 | Database ORM                    |
+| SQLite                                     | Application database            |
+| PyPDF                                      | PDF processing                  |
+| python-docx                                | DOCX processing                 |
+| RapidOCR                                   | OCR                             |
+| Pillow                                     | Image processing                |
+| odfpy                                      | ODT processing                  |
 
 ---
 

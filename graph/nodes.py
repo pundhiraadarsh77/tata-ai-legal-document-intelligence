@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field # For structured LLM output
 from typing import List
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, ToolMessage
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -46,6 +47,8 @@ GROQ_MODEL = "openai/gpt-oss-120b"
 
 GEMINI_MODEL = "gemini-3.8-flash"
 
+OPENROUTER_MODEL = "openrouter/free"
+
 groq_llm = ChatGroq(
     model = GROQ_MODEL,
     api_key = os.getenv("GROQ_API_KEY")
@@ -54,6 +57,12 @@ groq_llm = ChatGroq(
 gemini_llm = ChatGoogleGenerativeAI(
     model = GEMINI_MODEL,
     google_api_key = os.getenv("GEMINI_API_KEY")
+)
+
+openrouter_llm = ChatOpenAI(
+    model = OPENROUTER_MODEL,
+    base_url = "https://openrouter.ai/api/v1",
+    api_key = os.getenv("OPENROUTER_API_KEY")
 )
 
 # ----------------------------------------------
@@ -86,9 +95,7 @@ def invoke_structured_with_fallback(schema, prompt):
 
     try:
 
-        structured_llm = gemini_llm.with_structured_output(
-            schema
-        )
+        structured_llm = gemini_llm.with_structured_output(schema, config={"timeout": 30})
 
         result = structured_llm.invoke(prompt)
 
@@ -98,9 +105,31 @@ def invoke_structured_with_fallback(schema, prompt):
 
         print("Gemini Error:", repr(gemini_error), flush=True)
 
+    # ----------------------------------------------
+    # Try OpenRouter if Gemini fails
+    # ----------------------------------------------
+
+    try:
+
+        structured_llm = openrouter_llm.with_structured_output(
+            schema
+        )
+
+        result = structured_llm.invoke(prompt)
+
+        return result
+
+    except Exception as openrouter_error:
+
+        print(
+            "OpenRouter Structured Output Error:",
+            repr(openrouter_error),
+            flush=True
+        )
+
         raise RuntimeError(
             "LLM service unavailable"
-        ) from gemini_error
+        ) from openrouter_error
 
 # ----------------------------------------------
 # LLM Invoke without structured output support
@@ -126,15 +155,31 @@ def invoke_with_fallback(prompt):
 
     try:
 
-        return gemini_llm.invoke(prompt)
+        return gemini_llm.invoke(prompt, config={"timeout": 30})
 
     except Exception as gemini_error:
 
         print("Gemini Error:", repr(gemini_error))
         
+    # -----------------------------------------
+    # Try OpenRouter if Gemini fails
+    # -----------------------------------------
+
+    try:
+
+        return openrouter_llm.invoke(prompt)
+
+    except Exception as openrouter_error:
+
+        print(
+            "OpenRouter Normal LLM Error:",
+            repr(openrouter_error),
+            flush=True
+        )
+
         raise RuntimeError(
             "LLM service unavailable"
-        ) from gemini_error
+        ) from openrouter_error
 
 # ----------------------------------------------
 # LLM Invoke with tools support
@@ -162,15 +207,33 @@ def invoke_with_tools_fallback(tools, messages):
     try:
         llm_with_tools = gemini_llm.bind_tools(tools)
 
-        return llm_with_tools.invoke(messages)
+        return llm_with_tools.invoke(messages, config={"timeout": 30})
 
     except Exception as gemini_error:
 
         print("Gemini Error:", repr(gemini_error))
 
+    # ----------------------------------------------
+    # Try OpenRouter
+    # ----------------------------------------------
+
+    try:
+
+        llm_with_tools = openrouter_llm.bind_tools(tools)
+
+        return llm_with_tools.invoke(messages)
+
+    except Exception as openrouter_error:
+
+        print(
+            "OpenRouter Tool Calling Error:",
+            repr(openrouter_error),
+            flush=True
+        )
+
         raise RuntimeError(
             "LLM service unavailable"
-        ) from gemini_error
+        ) from openrouter_error
 
 # ----------------------------------------------
 # Query Guardrail
@@ -569,7 +632,7 @@ Document text:
 
 class Sufficiency_Check(BaseModel):
     is_sufficient: bool
-    missing_information: list[str]
+    missing_information: list[str] = []
     reasoning: str
 
 # ----------------------------------------------
@@ -713,32 +776,28 @@ Document text:
 
 def retrieve_legal_guidance(state: Legal_Document_State):
 
-    """Retrieve relevant legal guidance from the approved knowledge base."""
-
     retrieved_guidance = []
-
     retriever = get_kb_retriever()
 
-    # Search the knowledge base using the extracted clause
     for clause in state["clauses"]:
+
         query = clause.clause_text
 
         results = retriever.invoke(query)
 
         for document in results:
             retrieved_guidance.append({
-                "content" : document.page_content,
-                "metadata" : document.metadata
+                "content": document.page_content,
+                "metadata": document.metadata
             })
 
-    # Mark legal guidance retrieval as completed
     update_progress(
         state.get("thread_id"),
         "legal_guidance_retrieval"
     )
 
     return {
-        "retrieved_guidance" : retrieved_guidance
+        "retrieved_guidance": retrieved_guidance
     }
 
 # --------------------------------------------------
@@ -911,7 +970,7 @@ class RiskFlag(BaseModel):
 
 class RiskAnalysisOutput(BaseModel):
     """
-    Structured response returned by Gemini for risk analysis.
+    Structured response returned by LLM Model for risk analysis.
     """
 
     risk_flags: List[RiskFlag]
@@ -994,7 +1053,7 @@ DOCUMENT CLAUSES:
 APPROVED KNOWLEDGE BASE GUIDANCE:
 {guidance_text}
 """
-
+    
     result = invoke_structured_with_fallback(RiskAnalysisOutput, prompt)
 
     # Mark risk analysis as completed
@@ -1223,7 +1282,7 @@ Evidence:
 
         evidence_text = "No relevant information was found in the uploaded document."   
 
-    # Ask Gemini to answer using only retrieved evidence
+    # Generate an answer using only retrieved evidence
     prompt = f"""
 You are a legal document review assistant.
 
