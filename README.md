@@ -18,6 +18,12 @@ The application is deployed and can be accessed directly through the link above.
 
 The complete source code, project structure, documentation, and configuration are available in this GitHub repository.
 
+## 🎥 Video Explanation
+
+[Watch the Project Explanation Video](https://drive.google.com/file/d/1tadLJEoOAq1Ha9LYe3mkw-fcLRgq7fOf/view?usp=sharing)
+
+Watch the video for a walkthrough of the project, its key features, system architecture, and legal document analysis workflow.
+
 ---
 
 ## 🚀 Overview
