@@ -20,7 +20,7 @@ The complete source code, project structure, documentation, and configuration ar
 
 ## 🎥 Video Explanation
 
-[Watch the Project Explanation Video](https://drive.google.com/file/d/1tadLJEoOAq1Ha9LYe3mkw-fcLRgq7fOf/view?usp=sharing)
+[Watch the Project Explanation Video](https://drive.google.com/file/d/1TcLHovJjF5NhjKxHDc_oRFIBXcuLYOTi/view?usp=sharing)
 
 Watch the video for a walkthrough of the project, its key features, system architecture, and legal document analysis workflow.
 
