@@ -78,7 +78,8 @@ def invoke_structured_with_fallback(schema, prompt):
     try:
 
         structured_llm = groq_llm.with_structured_output(
-            schema
+            schema,
+            method="json_schema"
         )
 
         result = structured_llm.invoke(prompt)
@@ -95,7 +96,7 @@ def invoke_structured_with_fallback(schema, prompt):
 
     try:
 
-        structured_llm = gemini_llm.with_structured_output(schema, config={"timeout": 30})
+        structured_llm = gemini_llm.with_structured_output(schema)
 
         result = structured_llm.invoke(prompt)
 
@@ -147,7 +148,7 @@ def invoke_with_fallback(prompt):
 
     except Exception as groq_error:
         
-        print("Groq Normal LLM Error:", repr(groq_error))
+        print("Groq Normal LLM Error:", repr(groq_error), flush=True)
 
     # -----------------------------------------
     # Try Gemini if Groq fails
@@ -155,11 +156,11 @@ def invoke_with_fallback(prompt):
 
     try:
 
-        return gemini_llm.invoke(prompt, config={"timeout": 30})
+        return gemini_llm.invoke(prompt)
 
     except Exception as gemini_error:
 
-        print("Gemini Error:", repr(gemini_error))
+        print("Gemini Error:", repr(gemini_error),flush=True)
         
     # -----------------------------------------
     # Try OpenRouter if Gemini fails
@@ -198,7 +199,7 @@ def invoke_with_tools_fallback(tools, messages):
 
     except Exception as groq_error:
         
-        print("Groq Tool Calling Error:", repr(groq_error))
+        print("Groq Tool Calling Error:", repr(groq_error), flush=True)
 
     # ----------------------------------------------
     # Try Gemini
@@ -207,11 +208,11 @@ def invoke_with_tools_fallback(tools, messages):
     try:
         llm_with_tools = gemini_llm.bind_tools(tools)
 
-        return llm_with_tools.invoke(messages, config={"timeout": 30})
+        return llm_with_tools.invoke(messages)
 
     except Exception as gemini_error:
 
-        print("Gemini Error:", repr(gemini_error))
+        print("Gemini Error:", repr(gemini_error), flush=True)
 
     # ----------------------------------------------
     # Try OpenRouter
